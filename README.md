@@ -1,10 +1,10 @@
-# 📱 Android Permission Handler (SDK 24 - 36)
+# 📱 Android Permission Access (SDK 24 - 36)
 
 ![GitHub](https://img.shields.io/badge/Android%20SDK-24%20to%2036-green)
 ![Kotlin](https://img.shields.io/badge/Kotlin-100%25-blue)
 ![License](https://img.shields.io/badge/License-MIT-orange)
 
-A **dynamic and easy-to-use** Android **runtime permission handler** built with **Kotlin**.  
+A **dynamic and easy-to-use** Android **runtime permission access** built with **Kotlin**.  
 It supports **all permissions from SDK 24 (Nougat) to SDK 36** and ensures **smooth user experience** with **custom dialogs, rationale handling, and API-safe permission requests**.
 
 ---
@@ -22,17 +22,17 @@ It supports **all permissions from SDK 24 (Nougat) to SDK 36** and ensures **smo
 ## 🚀 **Installation**
 Add this Kotlin class to your Android project:
 
-- **Create a new file:** `PermissionHandler.kt`
-- **Copy the latest PermissionHandler class from this repository**
+- **Create a new file:** `PermissionAccess.kt`
+- **Copy the latest PermissionAccess class from this repository**
 
 ---
 
 ## 📖 **Usage**
-### **1️⃣ Initialize Permission Handler**
+### **1️⃣ Initialize Permission Access**
 In your `Activity`:
 
 ```kotlin
-private lateinit var permissionHandler: PermissionHandler
+private lateinit var permission: PermissionAccess
 
 override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -44,7 +44,7 @@ override fun onCreate(savedInstanceState: Bundle?) {
         android.Manifest.permission.RECORD_AUDIO
     )
 
-    val customDialogConfig = PermissionHandler.DialogConfig(
+    val customDialogConfig = PermissionAccess.DialogConfig(
         title = "Required Permissions",
         message = "To continue, the app needs these permissions:",
         positiveButton = "Allow",
@@ -55,12 +55,12 @@ override fun onCreate(savedInstanceState: Bundle?) {
         deniedNegativeButton = "Close"
     )
 
-    permissionHandler = PermissionHandler(this, requiredPermissions, {
+    permissionAccess = PermissionAccess(this, requiredPermissions, {
         // ✅ Permission granted - execute your code here
     }, customDialogConfig)
 
     findViewById<Button>(R.id.requestPermissionButton).setOnClickListener {
-        permissionHandler.checkAndRequestPermissions()
+        permissionAccess.checkAndRequestPermissions()
     }
 }
 ```
