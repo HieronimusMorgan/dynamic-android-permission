@@ -7,7 +7,6 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
-import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -15,7 +14,7 @@ import androidx.core.content.ContextCompat
 class PermissionAccess(
     private val activity: AppCompatActivity,
     private val permissions: Array<String>,
-    private val onGranted: () -> Unit,
+    private val callback: PermissionCallback,
     private val dialogConfig: DialogConfig = DialogConfig()
 ) {
     data class DialogConfig(
@@ -28,6 +27,16 @@ class PermissionAccess(
         val deniedPositiveButton: String = "Go to Settings",
         val deniedNegativeButton: String = "Cancel"
     )
+
+    private var requestPermissionLauncher = activity.registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { results ->
+        if (results.all { it.value }) {
+            callback.onPermissionGranted()
+        } else {
+            showPermissionDeniedDialog()
+        }
+    }
 
     private val permissionNames = mutableMapOf(
         android.Manifest.permission.CAMERA to "Camera",
@@ -58,8 +67,10 @@ class PermissionAccess(
     init {
         // Android 10+ (Q)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            permissionNames[android.Manifest.permission.ACCESS_BACKGROUND_LOCATION] = "Background Location"
-            permissionNames[android.Manifest.permission.ACTIVITY_RECOGNITION] = "Activity Recognition"
+            permissionNames[android.Manifest.permission.ACCESS_BACKGROUND_LOCATION] =
+                "Background Location"
+            permissionNames[android.Manifest.permission.ACTIVITY_RECOGNITION] =
+                "Activity Recognition"
         }
         // Android 12+ (S)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -78,14 +89,18 @@ class PermissionAccess(
             permissionNames[android.Manifest.permission.FOREGROUND_SERVICE] = "Foreground Service"
             permissionNames[android.Manifest.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION] =
                 "Foreground Service Media Projection"
-            permissionNames[android.Manifest.permission.FOREGROUND_SERVICE_LOCATION] = "Foreground Service Location"
+            permissionNames[android.Manifest.permission.FOREGROUND_SERVICE_LOCATION] =
+                "Foreground Service Location"
         }
     }
 
-    private val requestPermissionLauncher: ActivityResultLauncher<Array<String>> by lazy {
-        activity.registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { results ->
+
+    fun registerPermissionLauncher() {
+        requestPermissionLauncher = activity.registerForActivityResult(
+            ActivityResultContracts.RequestMultiplePermissions()
+        ) { results ->
             if (results.all { it.value }) {
-                onGranted()
+                callback.onPermissionGranted()
             } else {
                 showPermissionDeniedDialog()
             }
@@ -100,7 +115,7 @@ class PermissionAccess(
         }
 
         if (deniedPermissions.isEmpty()) {
-            onGranted()
+            callback.onPermissionGranted()
         } else {
             if (deniedPermissions.any { activity.shouldShowRequestPermissionRationale(it) }) {
                 showPermissionRationaleDialog(deniedPermissions)
@@ -117,8 +132,10 @@ class PermissionAccess(
             android.Manifest.permission.READ_MEDIA_IMAGES,
             android.Manifest.permission.READ_MEDIA_VIDEO,
             android.Manifest.permission.READ_MEDIA_AUDIO -> Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+
             android.Manifest.permission.BLUETOOTH_CONNECT,
             android.Manifest.permission.BLUETOOTH_SCAN -> Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+
             else -> true
         }
     }
@@ -155,5 +172,9 @@ class PermissionAccess(
             data = Uri.fromParts("package", context.packageName, null)
         }
         context.startActivity(intent)
+    }
+
+    interface PermissionCallback {
+        fun onPermissionGranted()
     }
 }
