@@ -27,7 +27,7 @@ location**)
 To add this library to your Android project, include the following dependency in your build.gradle:
 ```gradle
 dependencies {
-    implementation 'com.github.HieronimusMorgan:dynamic-android-permission:1.0.0'
+    implementation 'com.github.HieronimusMorgan:dynamic-android-permission:<latest-version>'
 }
 ```
 Make sure you have JitPack enabled in your settings.gradle or build.gradle:
